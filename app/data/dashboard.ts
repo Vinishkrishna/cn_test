@@ -1,0 +1,80 @@
+import type { Job, RiskSummary, DashboardStats } from '~/types';
+
+export const dashboardStats: DashboardStats = {
+  totalJobsRun: 1284,
+  jobsCompleted: 1156,
+  successRate: 90.0,
+  activeAlerts: 7,
+  creditsRemaining: 4250,
+  estimatedJobsRemaining: 85,
+  percentChange: 12,
+};
+
+export const recentJobs: Job[] = [
+  {
+    id: '1',
+    name: 'GPT-4 Bias Validation',
+    project: 'ChatBot v2.0',
+    projectId: 'proj-1',
+    status: 'completed',
+    risk: 'low',
+    tests: { passed: 22, total: 24 },
+    credits: 48,
+    created: '2026-01-10T10:00:00Z',
+    progress: 100,
+  },
+  {
+    id: '2',
+    name: 'Safety Compliance Check',
+    project: 'Medical Assistant AI',
+    projectId: 'proj-2',
+    status: 'running',
+    risk: null,
+    tests: { passed: 12, total: 15 },
+    credits: 24,
+    created: '2026-01-10T09:00:00Z',
+    progress: 66,
+  },
+  {
+    id: '3',
+    name: 'Hallucination Detection',
+    project: 'Document Analyzer',
+    projectId: 'proj-3',
+    status: 'completed',
+    risk: 'medium',
+    tests: { passed: 15, total: 18 },
+    credits: 30,
+    created: '2026-01-10T08:00:00Z',
+    progress: 100,
+  },
+  {
+    id: '4',
+    name: 'EU AI Act Article 5',
+    project: 'HR Screening Tool',
+    projectId: 'proj-4',
+    status: 'failed',
+    risk: 'high',
+    tests: { passed: 4, total: 10 },
+    credits: 20,
+    created: '2026-01-10T07:00:00Z',
+    progress: 100,
+  },
+  {
+    id: '5',
+    name: 'Fairness Assessment',
+    project: 'Loan Predictor',
+    projectId: 'proj-5',
+    status: 'pending',
+    risk: null,
+    tests: { passed: 0, total: 22 },
+    credits: 0,
+    created: '2026-01-10T06:00:00Z',
+    progress: 0,
+  },
+];
+
+export const riskSummary: RiskSummary = {
+  lowRisk: 50,
+  mediumRisk: 28,
+  highRisk: 22,
+};
