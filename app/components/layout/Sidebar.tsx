@@ -77,7 +77,7 @@ function NavItem({ item, isActive }: NavItemProps) {
 }
 
 export function Sidebar() {
-  const { isOpen, closeSidebar } = useSidebar();
+  const { isOpen, isCollapsed, closeSidebar } = useSidebar();
   const location = useLocation();
   const [adminOpen, setAdminOpen] = useState(() => 
     location.pathname.startsWith('/admin')
@@ -103,9 +103,10 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 h-full w-64 flex-shrink-0 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto',
+          'fixed left-0 top-0 z-50 h-full w-64 flex-shrink-0 transform transition-all duration-300 ease-in-out lg:static lg:z-auto',
           'bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800',
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? 'translate-x-0' : '-translate-x-full',
+          isCollapsed ? 'lg:-translate-x-full lg:w-0 lg:border-0' : 'lg:translate-x-0'
         )}
       >
         <div className="flex flex-col h-full">

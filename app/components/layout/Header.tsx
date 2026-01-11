@@ -11,6 +11,7 @@ import {
   LogOut,
   Settings,
   User,
+  PanelLeft,
 } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
 import { cn } from '~/lib/cn';
@@ -21,7 +22,7 @@ import { SEARCH_DEBOUNCE_MS } from '~/lib/constants';
 
 export function Header() {
   const { theme, toggleTheme } = useTheme();
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, toggleCollapse } = useSidebar();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -46,6 +47,15 @@ export function Header() {
             className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <MenuIcon className="h-5 w-5" />
+          </button>
+
+          {/* Desktop sidebar toggle */}
+          <button
+            onClick={toggleCollapse}
+            className="hidden lg:flex p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Toggle sidebar"
+          >
+            <PanelLeft className="h-5 w-5" />
           </button>
 
           {/* Tenant Selector */}
