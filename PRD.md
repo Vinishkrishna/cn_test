@@ -197,6 +197,7 @@ graph TD
 ### 5.1 Sidebar Navigation
 
 - **Collapsible**: Toggle button in header
+- **Close Button**: On mobile, an X button appears at the top right of the sidebar header for closing
 - **Scrollable**: Overflow-y-auto for long content
 - **Sections**: MAIN, BILLING, ADMIN (dropdown)
 - **Admin Dropdown**: Contains Test Case Management, Policy Management, User Management, Usage Analytics
@@ -214,9 +215,9 @@ graph TD
 
 ### 5.3 Theme System
 
-- **Light Mode**: Default (white/light gray backgrounds)
+- **Light Mode**: Default on first open (always starts in light mode, ignores system preference)
 - **Dark Mode**: Toggle via header button (dark/black backgrounds)
-- **Persistence**: LocalStorage
+- **Persistence**: LocalStorage (remembers user's choice after first toggle)
 - **Tailwind v4 Config**: Class-based dark mode via `@custom-variant dark (&:where(.dark, .dark *))` in `app.css`
 - **Implementation**: ThemeContext adds/removes `dark` class on `<html>` element
 
@@ -281,15 +282,24 @@ graph TD
 **Create Project Modal:**
 
 - Project Name (text input)
+- Description (textarea, optional)
 - AI System Type (dropdown: LLM, Multimodal)
 - Cancel + Save buttons
 
 **Project Detail (`/projects/:id`):**
 
-- Show project info
-- "+ Create Job" button
-- List jobs within project
-- "Execute Project" button to run all jobs
+- Show project info (AI System Type, Status, Total Jobs)
+- "+ Create Job" button - Opens multi-step modal:
+  1. Step 1: Enter job name (project pre-selected)
+  2. Step 2: Select regulation folder (EU AI ACT)
+  3. Step 3: Select test cases with checkboxes, then Save
+- List jobs within project with clickable job names
+- **Job Detail View**: Click on job name or eye icon to view:
+  - Job status, progress, risk level, credits
+  - List of all selected test cases with name, description, complexity, modality
+- "Execute Project" button to run all pending/failed jobs
+- Execution feedback with success/status messages
+- **Data Persistence**: All projects and jobs stored in localStorage
 
 ### 6.3 Jobs (`/jobs`)
 
@@ -302,12 +312,27 @@ graph TD
 
 **Table Columns:**
 
-- Job (name + project)
+- Checkbox for selection
+- Job (clickable name + project)
 - Status
 - Progress (progress bar + text)
 - Risk
 - Credits
 - Created
+- Actions (eye icon to view, more menu)
+
+**Job Detail View Modal:**
+
+- Click on job name or eye icon to view job details
+- Shows: Project, Status, Progress, Risk Level, Credits, Created date
+- Lists all selected test cases with name, description, complexity units, modality
+- Close button to dismiss
+
+**Data Persistence:**
+
+- Jobs created in `/projects` appear in `/jobs` section
+- All data stored in localStorage (`aivalidate_jobs` key)
+- New jobs appear at the top of the list
 
 **Create Job Flow:**
 

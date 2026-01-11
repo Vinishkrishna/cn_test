@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { Plus, Play, MoreVertical } from 'lucide-react';
+import { Plus, Play, MoreVertical, Eye, Check } from 'lucide-react';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { Card } from '~/components/ui/Card';
 import { Button } from '~/components/ui/Button';
 import { Select } from '~/components/ui/Select';
+import { Modal } from '~/components/ui/Modal';
 import { SearchInput } from '~/components/shared/SearchInput';
 import { StatusBadge } from '~/components/shared/StatusBadge';
 import { RiskBadge } from '~/components/shared/RiskBadge';
@@ -17,16 +18,48 @@ import {
   TableCell,
 } from '~/components/ui/Table';
 import { jobs as initialJobs } from '~/data/jobs';
+import { testCases } from '~/data/testCases';
 import { JOB_STATUS_OPTIONS } from '~/lib/constants';
 import { formatRelativeTime } from '~/lib/formatters';
-import type { JobStatus } from '~/types';
+import type { Job, JobStatus, TestCase } from '~/types';
+
+const JOBS_STORAGE_KEY = 'aivalidate_jobs';
+
+// Helper to get jobs from localStorage
+function getStoredJobs(): Job[] {
+  if (typeof window === 'undefined') return initialJobs;
+  try {
+    const stored = localStorage.getItem(JOBS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // Initialize with default jobs
+    localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(initialJobs));
+    return initialJobs;
+  } catch {
+    return initialJobs;
+  }
+}
 
 export default function Jobs() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [viewingJob, setViewingJob] = useState<Job | null>(null);
 
-  const filteredJobs = initialJobs.filter((job) => {
+  // Load from localStorage on mount
+  useEffect(() => {
+    setJobs(getStoredJobs());
+  }, []);
+
+  // Get test cases for a specific job
+  const getJobTestCases = (job: Job): TestCase[] => {
+    if (!job.testCaseIds || job.testCaseIds.length === 0) return [];
+    return testCases.filter(tc => job.testCaseIds?.includes(tc.id));
+  };
+
+  const filteredJobs = jobs.filter((job) => {
     const matchesSearch = job.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -130,7 +163,12 @@ export default function Jobs() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <p className="font-medium">{job.name}</p>
+                      <button
+                        onClick={() => setViewingJob(job)}
+                        className="font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline text-left"
+                      >
+                        {job.name}
+                      </button>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {job.project}
                       </p>
@@ -169,9 +207,18 @@ export default function Jobs() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
-                      <MoreVertical className="h-4 w-4 text-gray-400" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setViewingJob(job)}
+                        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                        title="View test cases"
+                      >
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      </button>
+                      <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <MoreVertical className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -179,6 +226,96 @@ export default function Jobs() {
           </TableBody>
         </Table>
       </Card>
+
+      {/* View Job Test Cases Modal */}
+      <Modal
+        isOpen={viewingJob !== null}
+        onClose={() => setViewingJob(null)}
+        title={viewingJob?.name || 'Job Details'}
+        size="lg"
+      >
+        {viewingJob && (
+          <div className="space-y-4">
+            {/* Job Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Project</p>
+                <p className="font-medium text-gray-900 dark:text-white">{viewingJob.project}</p>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                <StatusBadge status={viewingJob.status} />
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Progress</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <ProgressBar value={viewingJob.progress} className="w-20" />
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{viewingJob.progress}%</span>
+                </div>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Risk Level</p>
+                {viewingJob.risk ? <RiskBadge risk={viewingJob.risk} /> : <span className="text-gray-500">-</span>}
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Credits</p>
+                <p className="font-medium text-gray-900 dark:text-white">{viewingJob.credits}</p>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Created</p>
+                <p className="font-medium text-gray-900 dark:text-white">{formatRelativeTime(viewingJob.created)}</p>
+              </div>
+            </div>
+
+            {/* Test Cases */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                Selected Test Cases ({getJobTestCases(viewingJob).length})
+              </h3>
+              {getJobTestCases(viewingJob).length === 0 ? (
+                <p className="text-gray-500 dark:text-gray-400 text-sm py-4 text-center">
+                  No test cases associated with this job.
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {getJobTestCases(viewingJob).map((tc) => (
+                    <div
+                      key={tc.id}
+                      className="flex items-center gap-4 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                    >
+                      <div className="flex-shrink-0 w-5 h-5 rounded bg-indigo-600 flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {tc.name}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
+                          {tc.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                          {tc.complexity} units
+                        </span>
+                        <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
+                          {tc.modality}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button variant="outline" onClick={() => setViewingJob(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

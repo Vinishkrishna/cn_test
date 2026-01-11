@@ -16,6 +16,7 @@ export interface Job {
   credits: number;
   created: string;
   progress: number;
+  testCaseIds?: string[];
 }
 
 // Project Types

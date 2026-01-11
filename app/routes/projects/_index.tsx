@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Plus, MoreVertical, FolderOpen } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -9,6 +9,7 @@ import { Card } from '~/components/ui/Card';
 import { Button } from '~/components/ui/Button';
 import { Input } from '~/components/ui/Input';
 import { Select } from '~/components/ui/Select';
+import { Textarea } from '~/components/ui/Textarea';
 import { Modal } from '~/components/ui/Modal';
 import { SearchInput } from '~/components/shared/SearchInput';
 import { StatusBadge } from '~/components/shared/StatusBadge';
@@ -20,21 +21,72 @@ import {
   TableCell,
 } from '~/components/ui/Table';
 import { projects as initialProjects } from '~/data/projects';
+import { jobs as initialJobs } from '~/data/jobs';
 import { AI_SYSTEM_TYPES } from '~/lib/constants';
 import { formatDate } from '~/lib/formatters';
-import type { Project } from '~/types';
+import type { Project, Job } from '~/types';
+
+const PROJECTS_STORAGE_KEY = 'aivalidate_projects';
+const JOBS_STORAGE_KEY = 'aivalidate_jobs';
 
 const createProjectSchema = z.object({
   name: z.string().min(1, 'Project name is required'),
+  description: z.string().optional(),
   aiSystemType: z.enum(['llm', 'multimodal']),
 });
 
 type CreateProjectForm = z.infer<typeof createProjectSchema>;
 
+// Helper to get projects from localStorage
+function getStoredProjects(): Project[] {
+  if (typeof window === 'undefined') return initialProjects;
+  try {
+    const stored = localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // Initialize with default projects
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(initialProjects));
+    return initialProjects;
+  } catch {
+    return initialProjects;
+  }
+}
+
+// Helper to get jobs from localStorage
+function getStoredJobs(): Job[] {
+  if (typeof window === 'undefined') return initialJobs;
+  try {
+    const stored = localStorage.getItem(JOBS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // Initialize with default jobs
+    localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(initialJobs));
+    return initialJobs;
+  } catch {
+    return initialJobs;
+  }
+}
+
 export default function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    setProjects(getStoredProjects());
+    setJobs(getStoredJobs());
+  }, []);
+
+  // Persist projects to localStorage
+  useEffect(() => {
+    if (projects.length > 0) {
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+    }
+  }, [projects]);
 
   const {
     register,
@@ -56,11 +108,16 @@ export default function Projects() {
     project.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Calculate job counts per project
+  const getProjectJobCount = (projectId: string) => {
+    return jobs.filter(job => job.projectId === projectId).length;
+  };
+
   const onSubmit = (data: CreateProjectForm) => {
     const newProject: Project = {
       id: `proj-${Date.now()}`,
       name: data.name,
-      description: '',
+      description: data.description || '',
       aiSystemType: data.aiSystemType,
       status: 'draft',
       jobsCount: 0,
@@ -150,7 +207,7 @@ export default function Projects() {
                   </TableCell>
                   <TableCell>
                     <span className="text-gray-600 dark:text-gray-300">
-                      {project.jobsCount}
+                      {getProjectJobCount(project.id)}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -185,6 +242,12 @@ export default function Projects() {
             placeholder="Enter project name"
             error={errors.name?.message}
             {...register('name')}
+          />
+          <Textarea
+            label="Description"
+            placeholder="Enter project description (optional)"
+            rows={3}
+            {...register('description')}
           />
           <Select
             label="AI System Type"
