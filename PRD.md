@@ -527,7 +527,7 @@ When test cases are selected, a "Save Selected (n)" button appears. Clicking it 
 
 ### 6.10 Admin: Policy Management (`/admin/policies`)
 
-**Header:** "Policy Management" with "Upload Policy" button
+**Header:** "Policy Management" with "Upload Policy" button (always enabled by default)
 
 **Stats Cards (4 columns):**
 
@@ -538,9 +538,9 @@ When test cases are selected, a "Save Selected (n)" button appears. Clicking it 
 
 **Processing Queue:**
 
-- Shows currently processing documents
-- Progress bar with percentage
-- Block new uploads while processing
+- Shows currently processing documents (empty by default)
+- Progress bar with percentage when processing
+- Blocks new uploads only while processing
 
 **Search:** Debounced search
 

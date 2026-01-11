@@ -54,11 +54,9 @@ export const policyStats = {
   storageUsed: 17500000,
 };
 
-export const processingQueue = [
-  {
-    id: 'pq-1',
-    name: 'Healthcare AI Standards',
-    progress: 65,
-    status: 'Extracting articles and requirements...',
-  },
-];
+export const processingQueue: Array<{
+  id: string;
+  name: string;
+  progress: number;
+  status: string;
+}> = [];
