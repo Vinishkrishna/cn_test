@@ -7,6 +7,7 @@ import {
   Plus,
   FileText,
   ArrowRight,
+  Play,
 } from 'lucide-react';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { Card } from '~/components/ui/Card';
@@ -36,7 +37,23 @@ export default function Dashboard() {
     <div className="space-y-6">
       <PageHeader
         title="Dashboard"
-        subtitle="Overview of your AI compliance validation platform"
+        subtitle="AI Validation & Compliance overview"
+        action={
+          <div className="flex items-center gap-3">
+            <Button asChild variant="outline">
+              <Link to="/reports">
+                <FileText className="h-4 w-4" />
+                View Reports
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/jobs/create">
+                <Play className="h-4 w-4" />
+                Create Job
+              </Link>
+            </Button>
+          </div>
+        }
       />
 
       {/* Stats Cards */}
@@ -68,22 +85,6 @@ export default function Dashboard() {
           subtitle={`Est. ${dashboardStats.estimatedJobsRemaining} jobs remaining`}
           icon={<Coins className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />}
         />
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-3">
-        <Button asChild variant="outline">
-          <Link to="/reports">
-            <FileText className="h-4 w-4" />
-            View Reports
-          </Link>
-        </Button>
-        <Button asChild>
-          <Link to="/jobs/create">
-            <Plus className="h-4 w-4" />
-            Create Job
-          </Link>
-        </Button>
       </div>
 
       {/* Main Content Grid */}

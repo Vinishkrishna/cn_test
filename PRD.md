@@ -257,17 +257,19 @@ Located in `app/components/charts/`:
 
 ### 6.1 Dashboard (`/`)
 
+**Header:** "Dashboard" with subtitle "AI Validation & Compliance overview"
+
+**Action Buttons (in header, right-aligned):**
+
+- "View Reports" (outline style, document icon) - Navigate to `/reports`
+- "Create Job" (primary style, play icon) - Navigate to job creation flow
+
 **Stats Cards (4 columns on desktop):**
 
 1. Total Jobs Run: `1,284` - All time validations, +12% from last month
 2. Jobs Completed: `1,156` - 90.0% success rate
 3. Active Alerts: `7` - Requires attention (amber)
 4. Credits Remaining: `4,250` - Est. 85 jobs remaining
-
-**Action Buttons:**
-
-- "View Reports" - Navigate to `/reports`
-- "Create Job" - Navigate to job creation flow
 
 **Recent Jobs Table:**
 
