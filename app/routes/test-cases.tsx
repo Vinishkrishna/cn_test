@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Type, Image, Video, ExternalLink } from 'lucide-react';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { Card } from '~/components/ui/Card';
 import { Button } from '~/components/ui/Button';
 import { Select } from '~/components/ui/Select';
+import { Input } from '~/components/ui/Input';
 import { Badge } from '~/components/ui/Badge';
 import { Modal } from '~/components/ui/Modal';
 import { SearchInput } from '~/components/shared/SearchInput';
@@ -16,10 +17,58 @@ import {
   TableCell,
 } from '~/components/ui/Table';
 import { testCases } from '~/data/testCases';
-import { projects } from '~/data/projects';
+import { projects as initialProjects } from '~/data/projects';
+import { jobs as initialJobs } from '~/data/jobs';
 import { MODALITY_OPTIONS, SOURCE_OPTIONS } from '~/lib/constants';
 import { cn } from '~/lib/cn';
-import type { Modality } from '~/types';
+import type { Modality, Project, Job } from '~/types';
+
+const PROJECTS_STORAGE_KEY = 'aivalidate_projects';
+const JOBS_STORAGE_KEY = 'aivalidate_jobs';
+
+// Helper to get projects from localStorage
+function getStoredProjects(): Project[] {
+  if (typeof window === 'undefined') return initialProjects;
+  try {
+    const stored = localStorage.getItem(PROJECTS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(initialProjects));
+    return initialProjects;
+  } catch {
+    return initialProjects;
+  }
+}
+
+// Helper to get jobs from localStorage
+function getStoredJobs(): Job[] {
+  if (typeof window === 'undefined') return initialJobs;
+  try {
+    const stored = localStorage.getItem(JOBS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(initialJobs));
+    return initialJobs;
+  } catch {
+    return initialJobs;
+  }
+}
+
+// Helper to save projects
+function saveProjects(projects: Project[]) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+  }
+}
+
+// Helper to save jobs
+function saveJobs(jobs: Job[]) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
+  }
+}
 
 const modalityIcons: Record<Modality, React.ComponentType<{ className?: string }>> = {
   text: Type,
@@ -33,7 +82,28 @@ export default function TestCases() {
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedTestCases, setSelectedTestCases] = useState<string[]>([]);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  
+  // Project/Job selection state
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [newProjectName, setNewProjectName] = useState('');
+  const [selectedJobId, setSelectedJobId] = useState<string>('');
+  const [newJobName, setNewJobName] = useState('');
+  const [useNewProject, setUseNewProject] = useState(false);
+  const [useNewJob, setUseNewJob] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    setProjects(getStoredProjects());
+    setJobs(getStoredJobs());
+  }, []);
+
+  // Get jobs for selected project
+  const projectJobs = selectedProjectId 
+    ? jobs.filter(j => j.projectId === selectedProjectId)
+    : [];
 
   const filteredTestCases = testCases.filter((tc) => {
     const matchesSearch =
@@ -56,16 +126,118 @@ export default function TestCases() {
     }
   };
 
-  const handleConfirmSave = () => {
-    console.log('Saving test cases to project:', selectedProjectId, selectedTestCases);
+  const resetSaveModal = () => {
     setIsSaveModalOpen(false);
-    setSelectedTestCases([]);
     setSelectedProjectId('');
+    setNewProjectName('');
+    setSelectedJobId('');
+    setNewJobName('');
+    setUseNewProject(false);
+    setUseNewJob(false);
+  };
+
+  const handleConfirmSave = () => {
+    let targetProjectId = selectedProjectId;
+    let targetProjectName = '';
+    let targetJobId = selectedJobId;
+
+    // Create new project if needed
+    if (useNewProject && newProjectName.trim()) {
+      const newProject: Project = {
+        id: `proj-${Date.now()}`,
+        name: newProjectName.trim(),
+        description: '',
+        aiSystemType: 'llm',
+        status: 'active',
+        jobsCount: 0,
+        lastValidation: null,
+      };
+      const updatedProjects = [newProject, ...projects];
+      setProjects(updatedProjects);
+      saveProjects(updatedProjects);
+      targetProjectId = newProject.id;
+      targetProjectName = newProject.name;
+    } else {
+      const existingProject = projects.find(p => p.id === targetProjectId);
+      targetProjectName = existingProject?.name || '';
+    }
+
+    if (!targetProjectId) return;
+
+    // Calculate complexity for selected test cases
+    const selectedTestCaseObjects = testCases.filter(tc => selectedTestCases.includes(tc.id));
+    const totalComplexity = selectedTestCaseObjects.reduce((acc, tc) => acc + tc.complexity, 0);
+
+    // Create new job or update existing
+    if (useNewJob && newJobName.trim()) {
+      const newJob: Job = {
+        id: `job-${Date.now()}`,
+        name: newJobName.trim(),
+        project: targetProjectName,
+        projectId: targetProjectId,
+        status: 'pending',
+        risk: null,
+        tests: { passed: 0, total: selectedTestCases.length },
+        credits: totalComplexity * 2,
+        created: new Date().toISOString(),
+        progress: 0,
+        testCaseIds: selectedTestCases,
+      };
+      const updatedJobs = [newJob, ...jobs];
+      setJobs(updatedJobs);
+      saveJobs(updatedJobs);
+    } else if (targetJobId) {
+      // Update existing job with new test cases
+      const updatedJobs = jobs.map(job => {
+        if (job.id === targetJobId) {
+          const existingTestCaseIds = job.testCaseIds || [];
+          const mergedTestCaseIds = [...new Set([...existingTestCaseIds, ...selectedTestCases])];
+          const mergedTestCases = testCases.filter(tc => mergedTestCaseIds.includes(tc.id));
+          const newComplexity = mergedTestCases.reduce((acc, tc) => acc + tc.complexity, 0);
+          return {
+            ...job,
+            testCaseIds: mergedTestCaseIds,
+            tests: { ...job.tests, total: mergedTestCaseIds.length },
+            credits: newComplexity * 2,
+          };
+        }
+        return job;
+      });
+      setJobs(updatedJobs);
+      saveJobs(updatedJobs);
+    }
+
+    // Update project status
+    const updatedProjects = projects.map(p => 
+      p.id === targetProjectId 
+        ? { ...p, status: 'active' as const }
+        : p
+    );
+    setProjects(updatedProjects);
+    saveProjects(updatedProjects);
+
+    setSaveSuccess(true);
+    setTimeout(() => {
+      setSaveSuccess(false);
+      setSelectedTestCases([]);
+      resetSaveModal();
+    }, 1500);
+  };
+
+  const canSave = () => {
+    const hasProject = useNewProject ? newProjectName.trim() !== '' : selectedProjectId !== '';
+    const hasJob = useNewJob ? newJobName.trim() !== '' : selectedJobId !== '';
+    return hasProject && hasJob;
   };
 
   const projectOptions = projects.map((p) => ({
     value: p.id,
     label: p.name,
+  }));
+
+  const jobOptions = projectJobs.map((j) => ({
+    value: j.id,
+    label: j.name,
   }));
 
   return (
@@ -219,30 +391,140 @@ export default function TestCases() {
       {/* Save Modal */}
       <Modal
         isOpen={isSaveModalOpen}
-        onClose={() => setIsSaveModalOpen(false)}
-        title="Save Test Cases to Project"
+        onClose={resetSaveModal}
+        title="Save Test Cases"
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-400">
-            Select a project to add the {selectedTestCases.length} selected test case
-            {selectedTestCases.length > 1 ? 's' : ''} to.
-          </p>
-          <Select
-            label="Project"
-            options={projectOptions}
-            value={selectedProjectId}
-            onChange={(value) => setSelectedProjectId(value as string)}
-            placeholder="Choose a project..."
-          />
-          <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" onClick={() => setIsSaveModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmSave} disabled={!selectedProjectId}>
-              Save
-            </Button>
-          </div>
+          {saveSuccess ? (
+            <div className="py-8 text-center">
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-lg font-medium text-gray-900 dark:text-white">Test Cases Saved!</p>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">
+                {selectedTestCases.length} test case{selectedTestCases.length > 1 ? 's' : ''} saved successfully.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-600 dark:text-gray-400">
+                Save {selectedTestCases.length} selected test case{selectedTestCases.length > 1 ? 's' : ''} to a project and job.
+              </p>
+
+              {/* Project Selection */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="projectType"
+                      checked={!useNewProject}
+                      onChange={() => setUseNewProject(false)}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Existing Project</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="projectType"
+                      checked={useNewProject}
+                      onChange={() => {
+                        setUseNewProject(true);
+                        setSelectedProjectId('');
+                        setSelectedJobId('');
+                        setUseNewJob(true);
+                      }}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">New Project</span>
+                  </label>
+                </div>
+                {useNewProject ? (
+                  <Input
+                    label="Project Name"
+                    placeholder="Enter new project name"
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                  />
+                ) : (
+                  <Select
+                    label="Select Project"
+                    options={projectOptions}
+                    value={selectedProjectId}
+                    onChange={(value) => {
+                      setSelectedProjectId(value as string);
+                      setSelectedJobId('');
+                    }}
+                    placeholder="Choose a project..."
+                  />
+                )}
+              </div>
+
+              {/* Job Selection */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="jobType"
+                      checked={!useNewJob}
+                      onChange={() => setUseNewJob(false)}
+                      disabled={useNewProject || projectJobs.length === 0}
+                      className="text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                    />
+                    <span className={cn(
+                      "text-sm",
+                      (useNewProject || projectJobs.length === 0) 
+                        ? "text-gray-400 dark:text-gray-500" 
+                        : "text-gray-700 dark:text-gray-300"
+                    )}>
+                      Existing Job {!useNewProject && projectJobs.length === 0 && "(no jobs in project)"}
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="jobType"
+                      checked={useNewJob}
+                      onChange={() => setUseNewJob(true)}
+                      className="text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">New Job</span>
+                  </label>
+                </div>
+                {useNewJob ? (
+                  <Input
+                    label="Job Name"
+                    placeholder="Enter new job name"
+                    value={newJobName}
+                    onChange={(e) => setNewJobName(e.target.value)}
+                  />
+                ) : (
+                  <Select
+                    label="Select Job"
+                    options={jobOptions}
+                    value={selectedJobId}
+                    onChange={(value) => setSelectedJobId(value as string)}
+                    placeholder="Choose a job..."
+                    disabled={useNewProject || projectJobs.length === 0}
+                  />
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button variant="outline" onClick={resetSaveModal}>
+                  Cancel
+                </Button>
+                <Button onClick={handleConfirmSave} disabled={!canSave()}>
+                  Save
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>

@@ -365,7 +365,30 @@ graph TD
 - Documents (EU AI Act link)
 - Status (active, draft)
 
-**Save Action:** When test cases selected, prompt for project/job selection
+**Save Selection Flow:**
+
+When test cases are selected, a "Save Selected (n)" button appears. Clicking it opens a modal:
+
+1. **Project Selection:**
+   - Radio buttons: "Existing Project" or "New Project"
+   - Existing: Dropdown to select from saved projects
+   - New: Text input to enter project name
+
+2. **Job Selection:**
+   - Radio buttons: "Existing Job" or "New Job"
+   - Existing: Dropdown showing jobs in selected project (disabled if new project or no jobs exist)
+   - New: Text input to enter job name
+
+3. **Save Behavior:**
+   - Creates new project if "New Project" selected
+   - Creates new job with selected test cases, or merges test cases into existing job
+   - Shows success message before closing
+   - Clears selection after save
+
+**Data Persistence:**
+
+- Uses same localStorage keys as `/projects` and `/jobs`
+- Saved projects/jobs immediately appear in other sections
 
 ### 6.5 Policies (`/policies`)
 
