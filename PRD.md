@@ -214,10 +214,11 @@ graph TD
 
 ### 5.3 Theme System
 
-- **Light Mode**: Default
-- **Dark Mode**: Toggle via header button
+- **Light Mode**: Default (white/light gray backgrounds)
+- **Dark Mode**: Toggle via header button (dark/black backgrounds)
 - **Persistence**: LocalStorage
-- **CSS Variables**: Tailwind dark mode classes
+- **Tailwind v4 Config**: Class-based dark mode via `@custom-variant dark (&:where(.dark, .dark *))` in `app.css`
+- **Implementation**: ThemeContext adds/removes `dark` class on `<html>` element
 
 ### 5.4 Responsive Design
 
