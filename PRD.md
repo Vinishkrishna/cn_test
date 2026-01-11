@@ -414,7 +414,9 @@ When test cases are selected, a "Save Selected (n)" button appears. Clicking it 
 
 **Tabs:** Policy Documents, Knowledge Base, Article Mapping
 
-**Info Box:** Explanation of RAG processing
+**Policy Documents Tab:**
+
+**Info Box:** Explanation of RAG processing for policy documents
 
 **Search:** Debounced search for policies
 
@@ -425,6 +427,27 @@ When test cases are selected, a "Save Selected (n)" button appears. Clicking it 
 - Status (Indexed, Processing)
 - Articles count
 - Uploaded date
+
+**Knowledge Base Tab:**
+
+- Title: "Knowledge Base" with subtitle "Indexed policy content available for validation"
+- **6 Interactive Cards** in 3-column grid:
+  1. **High-Risk AI Systems** - Blue icon (Shield), 15 indexed sections, EU AI Act
+  2. **Prohibited Practices** - Red icon (Ban), 8 indexed sections, EU AI Act
+  3. **Transparency Requirements** - Green icon (Eye), 12 indexed sections, EU AI Act
+  4. **Data Governance** - Purple icon (Database), 6 indexed sections, Internal
+  5. **Human Oversight** - Orange icon (Users), 9 indexed sections, EU AI Act
+  6. **Bias & Fairness** - Teal icon (Scale), 11 indexed sections, Internal
+- Card hover effects: border highlight, shadow, icon background changes to solid color
+
+**Article Mapping Tab:**
+
+- Title: "Article Mapping" with subtitle "View how test cases map to regulatory articles"
+- Coming soon placeholder with:
+  - Network/hub icon in circular container
+  - "Article mapping visualization coming soon..." message
+  - Description about interactive graph for compliance relationships
+  - Dashed border container styling
 
 **Upload Policy Modal:**
 

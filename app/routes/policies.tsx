@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Upload, FileText, Info, MoreVertical } from 'lucide-react';
+import { Upload, FileText, Info, MoreVertical, Shield, Ban, Eye, Database, Users, Scale, Network } from 'lucide-react';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { Card } from '~/components/ui/Card';
 import { Button } from '~/components/ui/Button';
@@ -151,16 +151,130 @@ export default function Policies() {
     </div>
   );
 
+  // Knowledge Base data
+  const knowledgeBaseItems = [
+    {
+      id: 1,
+      title: 'High-Risk AI Systems',
+      sections: 15,
+      source: 'EU AI Act',
+      icon: Shield,
+      iconBg: 'bg-blue-50 dark:bg-blue-900/20',
+      iconColor: 'text-blue-600',
+      hoverBg: 'group-hover:bg-blue-600',
+    },
+    {
+      id: 2,
+      title: 'Prohibited Practices',
+      sections: 8,
+      source: 'EU AI Act',
+      icon: Ban,
+      iconBg: 'bg-red-50 dark:bg-red-900/20',
+      iconColor: 'text-red-600',
+      hoverBg: 'group-hover:bg-red-600',
+    },
+    {
+      id: 3,
+      title: 'Transparency Requirements',
+      sections: 12,
+      source: 'EU AI Act',
+      icon: Eye,
+      iconBg: 'bg-green-50 dark:bg-green-900/20',
+      iconColor: 'text-green-600',
+      hoverBg: 'group-hover:bg-green-600',
+    },
+    {
+      id: 4,
+      title: 'Data Governance',
+      sections: 6,
+      source: 'Internal',
+      icon: Database,
+      iconBg: 'bg-purple-50 dark:bg-purple-900/20',
+      iconColor: 'text-purple-600',
+      hoverBg: 'group-hover:bg-purple-600',
+    },
+    {
+      id: 5,
+      title: 'Human Oversight',
+      sections: 9,
+      source: 'EU AI Act',
+      icon: Users,
+      iconBg: 'bg-orange-50 dark:bg-orange-900/20',
+      iconColor: 'text-orange-600',
+      hoverBg: 'group-hover:bg-orange-600',
+    },
+    {
+      id: 6,
+      title: 'Bias & Fairness',
+      sections: 11,
+      source: 'Internal',
+      icon: Scale,
+      iconBg: 'bg-teal-50 dark:bg-teal-900/20',
+      iconColor: 'text-teal-600',
+      hoverBg: 'group-hover:bg-teal-600',
+    },
+  ];
+
   const KnowledgeBaseTab = (
-    <div className="flex items-center justify-center h-64">
-      <p className="text-gray-500 dark:text-gray-400">Knowledge Base content coming soon</p>
-    </div>
+    <Card className="p-8">
+      <div className="mb-8">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Knowledge Base</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Indexed policy content available for validation
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {knowledgeBaseItems.map((item) => {
+          const IconComponent = item.icon;
+          return (
+            <div
+              key={item.id}
+              className="group border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-lg transition-all cursor-pointer"
+            >
+              <div
+                className={cn(
+                  'w-10 h-10 rounded-lg flex items-center justify-center mb-4 transition-colors',
+                  item.iconBg,
+                  item.hoverBg
+                )}
+              >
+                <IconComponent
+                  className={cn('h-5 w-5 transition-colors', item.iconColor, 'group-hover:text-white')}
+                />
+              </div>
+              <h4 className="font-bold text-gray-900 dark:text-white mb-1">{item.title}</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-medium">{item.sections} indexed sections</span> •{' '}
+                <span className="italic">{item.source}</span>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
   );
 
   const ArticleMappingTab = (
-    <div className="flex items-center justify-center h-64">
-      <p className="text-gray-500 dark:text-gray-400">Article Mapping content coming soon</p>
-    </div>
+    <Card className="p-10 min-h-[400px]">
+      <div className="mb-12">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Article Mapping</h3>
+        <p className="text-gray-500 dark:text-gray-400">
+          View how test cases map to regulatory articles
+        </p>
+      </div>
+      <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+          <Network className="h-8 w-8 text-gray-400" />
+        </div>
+        <p className="text-gray-500 dark:text-gray-400 font-medium">
+          Article mapping visualization coming soon...
+        </p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-2 max-w-md text-center">
+          We're building an interactive graph to help you visualize complex relationships between
+          compliance requirements and testing results.
+        </p>
+      </div>
+    </Card>
   );
 
   return (
