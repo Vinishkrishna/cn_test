@@ -233,6 +233,24 @@ graph TD
 - Form validation with Zod schemas
 - React Hook Form for state management
 
+### 5.6 Chart Components
+
+Located in `app/components/charts/`:
+
+**DonutChart (`DonutChart.tsx`):**
+- Props: `data`, `height`, `innerRadius`, `outerRadius`, `colors`, `showLegend`, `showLabels`
+- `showLabels={true}`: Renders external labels positioned outside chart segments
+- Label format: "Name Value%" with color matching segment
+- Uses trigonometry (RADIAN) to calculate label positions at 135% of outer radius
+- Supports custom color arrays for segments
+- Theme-aware tooltips (light/dark backgrounds)
+
+**BarChart (`BarChart.tsx`):** Vertical bar charts for time-series data
+
+**LineChart (`LineChart.tsx`):** Line charts with multiple data series
+
+**HorizontalBarChart (`HorizontalBarChart.tsx`):** Horizontal bars for comparison data
+
 ---
 
 ## 6. Page Specifications
@@ -598,7 +616,14 @@ When test cases are selected, a "Save Selected (n)" button appears. Clicking it 
 
 **Credits Tab:** Line chart - "Credit Usage" (consumed vs purchased)
 
-**Tenants Tab:** Donut chart - "Usage by Tenant"
+**Tenants Tab:** 
+- Title: "Usage by Tenant" with subtitle "Distribution of platform usage across organizations"
+- **Donut Chart Features:**
+  - Large donut chart with inner radius 80px, outer radius 140px
+  - **External Labels**: Labels positioned outside the chart segments showing "Tenant Name XX%" format
+  - Custom colors: Blue (#2563eb), Green (#22c55e), Amber (#f59e0b), Gray (#94a3b8)
+  - Legend hidden (labels serve as visual indicator)
+  - Data: Acme Corporation 35%, TechCorp Inc. 25%, HealthAI Labs 22%, Others 18%
 
 **Test Cases Tab:** Horizontal bar chart - "Most Used Test Cases"
 

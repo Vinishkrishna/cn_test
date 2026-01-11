@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Label } from 'recharts';
 import { useTheme } from '~/contexts/ThemeContext';
 import type { ChartDataPoint } from '~/types';
 
@@ -12,7 +12,30 @@ export interface DonutChartProps {
   className?: string;
   colors?: string[];
   showLegend?: boolean;
+  showLabels?: boolean;
 }
+
+const RADIAN = Math.PI / 180;
+
+const renderCustomizedLabel = (props: any, colors: string[]) => {
+  const { cx, cy, midAngle, outerRadius, index, name, value } = props;
+  const radius = outerRadius * 1.35;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill={colors[index % colors.length]}
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+      className="text-sm font-semibold"
+    >
+      {`${name} ${value}%`}
+    </text>
+  );
+};
 
 export function DonutChart({
   data,
@@ -22,6 +45,7 @@ export function DonutChart({
   className,
   colors = COLORS,
   showLegend = true,
+  showLabels = false,
 }: DonutChartProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -39,6 +63,8 @@ export function DonutChart({
             paddingAngle={2}
             dataKey="value"
             nameKey="name"
+            label={showLabels ? (props) => renderCustomizedLabel(props, colors) : false}
+            labelLine={false}
           >
             {data.map((_, index) => (
               <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />

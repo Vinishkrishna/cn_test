@@ -49,19 +49,28 @@ export default function AdminAnalytics() {
     </Card>
   );
 
-  // Tenants Tab Content
+  // Tenants Tab Content - Colors matching image: blue, green, amber, gray
+  const tenantColors = ['#2563eb', '#22c55e', '#f59e0b', '#94a3b8'];
+  
   const TenantsTab = (
-    <Card>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Usage by Tenant
-      </h3>
-      <div className="flex justify-center">
+    <Card className="min-h-[500px]">
+      <div className="mb-8">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+          Usage by Tenant
+        </h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Distribution of platform usage across organizations
+        </p>
+      </div>
+      <div className="w-full" style={{ height: 400 }}>
         <DonutChart
           data={tenantUsage}
-          height={350}
-          innerRadius={70}
-          outerRadius={120}
-          colors={['#6366f1', '#8b5cf6', '#a855f7', '#d946ef']}
+          height={400}
+          innerRadius={80}
+          outerRadius={140}
+          colors={tenantColors}
+          showLegend={false}
+          showLabels={true}
         />
       </div>
     </Card>

@@ -29,10 +29,10 @@ export const creditUsage: ChartDataPoint[] = [
 ];
 
 export const tenantUsage: ChartDataPoint[] = [
-  { name: 'Tenant A', value: 35 },
-  { name: 'Tenant B', value: 25 },
-  { name: 'Tenant C', value: 20 },
-  { name: 'Tenant D', value: 20 },
+  { name: 'Acme Corporation', value: 35 },
+  { name: 'TechCorp Inc.', value: 25 },
+  { name: 'HealthAI Labs', value: 22 },
+  { name: 'Others', value: 18 },
 ];
 
 export const testCaseUsage: ChartDataPoint[] = [
